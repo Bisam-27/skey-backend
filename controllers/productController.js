@@ -1,9 +1,23 @@
-const Product = require('../models/product');
+const { Product, Category, Subcategory } = require('../models/associations');
 const { Op } = require('sequelize');
 
 const getProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, brand, minPrice, maxPrice } = req.query;
+    const {
+      page = 1,
+      limit = 12,
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+      sortBy = 'created_at',
+      sortOrder = 'DESC',
+      search = ''
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const offset = (pageNum - 1) * limitNum;
 
     // Build where clause for filtering
     const whereClause = {};
@@ -22,26 +36,64 @@ const getProducts = async (req, res) => {
       if (maxPrice) whereClause.price[Op.lte] = parseInt(maxPrice);
     }
 
-    const offset = (page - 1) * limit;
+    // Add search functionality
+    if (search && search.trim()) {
+      whereClause[Op.or] = [
+        { name: { [Op.iLike]: `%${search.trim()}%` } },
+        { description: { [Op.iLike]: `%${search.trim()}%` } },
+        { short_name: { [Op.iLike]: `%${search.trim()}%` } }
+      ];
+    }
 
-    const products = await Product.findAndCountAll({
+    // Validate sort parameters
+    const validSortFields = ['id', 'name', 'price', 'created_at', 'stock', 'discount'];
+    const validSortOrders = ['ASC', 'DESC'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
+    const sortDirection = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    const { count, rows: products } = await Product.findAndCountAll({
       where: whereClause,
-
-      // Show newest products first
-      order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ],
+      order: [[sortField, sortDirection]],
+      limit: limitNum,
+      offset: offset
     });
+
+    const totalPages = Math.ceil(count / limitNum);
 
     res.status(200).json({
       success: true,
       message: 'Products retrieved successfully',
-      data: products.rows,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(products.count / limit),
-        totalItems: products.count,
-        itemsPerPage: parseInt(limit)
+      data: {
+        products,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalProducts: count,
+          productsPerPage: limitNum,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
+        },
+        filters: {
+          sortBy: sortField,
+          sortOrder: sortDirection,
+          search: search || '',
+          category,
+          brand,
+          minPrice,
+          maxPrice
+        }
       }
     });
   } catch (err) {
@@ -170,7 +222,20 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(id, {
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ]
+    });
 
     if (!product) {
       return res.status(404).json({

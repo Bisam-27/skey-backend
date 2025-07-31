@@ -144,7 +144,8 @@ const Product = sequelize.define('Product', {
   },
   subcategory_id: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: true,
+    references: null // Remove foreign key constraint for existing table
   }
 }, {
 
