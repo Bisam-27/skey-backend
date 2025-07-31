@@ -1,4 +1,4 @@
-const Product = require('../models/product');
+const { Product, Category, Subcategory } = require('../models/associations');
 const { Op } = require('sequelize');
 
 const getProducts = async (req, res) => {
@@ -26,7 +26,18 @@ const getProducts = async (req, res) => {
 
     const products = await Product.findAndCountAll({
       where: whereClause,
-
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ],
       // Show newest products first
       order: [['created_at', 'DESC']],
       limit: parseInt(limit),
@@ -170,7 +181,20 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(id, {
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ]
+    });
 
     if (!product) {
       return res.status(404).json({
