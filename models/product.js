@@ -144,7 +144,13 @@ const Product = sequelize.define('Product', {
   },
   subcategory_id: {
     type: DataTypes.INTEGER,
-    allowNull: true
+    allowNull: true,
+    references: null // Remove foreign key constraint for existing table
+  },
+  vendor_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Reference to user table for vendor who owns this product'
   }
 }, {
 
