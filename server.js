@@ -15,6 +15,9 @@ const userRoutes = require('./routes/userRoutes');
 const homepageRoutes = require('./routes/homepageRoutes');
 const adminHomepageRoutes = require('./routes/adminHomepageRoutes');
 const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
+const adminOrderRoutes = require('./routes/adminOrderRoutes');
+const adminProductRoutes = require('./routes/adminProductRoutes');
+const adminCouponRoutes = require('./routes/adminCouponRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
 const vendorProductRoutes = require('./routes/vendorProductRoutes');
 const couponRoutes = require('./routes/couponRoutes');
@@ -23,9 +26,16 @@ const checkoutRoutes = require('./routes/checkoutRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // For parsing form data
 
 // Serve static files from frontend directory
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Serve admin panel static files
+app.use('/admin', express.static(path.join(__dirname, '../admin pannel')));
+
+// Serve uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -45,6 +55,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/homepage', homepageRoutes);
 app.use('/api/admin/homepage', adminHomepageRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/orders', adminOrderRoutes);
+app.use('/api/admin/products', adminProductRoutes);
+app.use('/api/admin/coupons', adminCouponRoutes);
 app.use('/api/vendor', vendorRoutes);
 app.use('/api/vendor/products', vendorProductRoutes);
 app.use('/api/coupons', couponRoutes);
@@ -56,22 +69,36 @@ app.get('/', (req, res) => {
 });
 
 sequelize.sync({ force: false }).then(() => {
-  console.log('Database synced successfully');
+  console.log('✅ Database synced successfully');
   app.listen(5000, () => {
-    console.log('🚀 Server running on port 5000');
-    console.log('📱 Frontend available at: http://localhost:5000');
-    console.log('🛒 Cart page: http://localhost:5000/cart.html');
-    console.log('💳 Checkout page: http://localhost:5000/checkout.html');
-    console.log('👤 Login page: http://localhost:5000/login.html');
     console.log('');
-    console.log('📡 API endpoints available:');
-    console.log('  POST /api/cart - Add item to cart');
-    console.log('  GET /api/cart - Get user cart');
-    console.log('  PUT /api/cart/:product_id - Update cart item');
-    console.log('  DELETE /api/cart/:product_id - Remove cart item');
-    console.log('  GET /api/checkout - Get checkout data');
-    console.log('  POST /api/checkout/address - Save address');
+    console.log('🎉 Skeyy E-commerce Server is running successfully!');
+    console.log('📱 Frontend: http://localhost:5000');
+    console.log('🔧 Admin Panel: http://localhost:5000/admin');
+    console.log('🩺 Health Check: http://localhost:5000/api/health');
+    console.log('');
+    console.log('📋 Main Pages:');
+    console.log('  🏠 Homepage: http://localhost:5000');
+    console.log('  🛒 Cart: http://localhost:5000/cart.html');
+    console.log('  💳 Checkout: http://localhost:5000/checkout.html');
+    console.log('  👤 Login: http://localhost:5000/login.html');
+    console.log('  📦 Products: http://localhost:5000/products.html');
+    console.log('');
+    console.log('🔧 Admin Panel:');
+    console.log('  📊 Dashboard: http://localhost:5000/admin');
+    console.log('  📦 Add Product: http://localhost:5000/admin/add-product.html');
+    console.log('  📋 Product List: http://localhost:5000/admin/select-product.html');
+    console.log('  📈 Orders: http://localhost:5000/admin/orders.html');
+    console.log('');
+    console.log('📡 Admin API Endpoints:');
+    console.log('  GET  /api/admin/products - List all products');
+    console.log('  POST /api/admin/products - Create new product');
+    console.log('  GET  /api/admin/products/vendors - List all vendors');
+    console.log('  GET  /api/admin/products/brands - List all brands');
+    console.log('  POST /api/admin/products/brands - Create new brand');
+    console.log('');
+    console.log('✨ Server ready for admin product management!');
   });
 }).catch((err) => {
-  console.error('DB connection error:', err);
+  console.error('❌ DB connection error:', err);
 });

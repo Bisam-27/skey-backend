@@ -338,43 +338,7 @@ const getCartCount = async (req, res) => {
   }
 };
 
-// Test endpoint to check product data
-const testProductData = async (req, res) => {
-  try {
-    const { product_id } = req.params;
-    const product = await Product.findByPk(product_id);
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image_1_url: product.image_1_url,
-        img_url: product.img_url,
-        image_2_url: product.image_2_url,
-        image_3_url: product.image_3_url,
-        image_1_thumbnail: product.image_1_thumbnail,
-        img_4_url: product.img_4_url,
-        available_fields: Object.keys(product.dataValues),
-        all_fields: product.dataValues
-      }
-    });
-  } catch (error) {
-    console.error('Test product data error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching product data'
-    });
-  }
-};
 
 // Apply coupon to cart
 const applyCouponToCart = async (req, res) => {
@@ -541,7 +505,6 @@ module.exports = {
   removeFromCart,
   clearCart,
   getCartCount,
-  testProductData,
   applyCouponToCart,
   removeCouponFromCart
 };

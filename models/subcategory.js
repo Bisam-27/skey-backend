@@ -20,12 +20,12 @@ const Subcategory = sequelize.define('Subcategory', {
       }
     }
   },
-  slug: {
-    type: DataTypes.STRING(100),
+  short_name: {
+    type: DataTypes.STRING(255),
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'Subcategory slug cannot be empty'
+        msg: 'Subcategory short_name cannot be empty'
       }
     }
   },
@@ -39,33 +39,21 @@ const Subcategory = sequelize.define('Subcategory', {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE'
   },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  image_url: {
+  img_url: {
     type: DataTypes.STRING(255),
     allowNull: true
   },
-  is_active: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: true
-  },
-  sort_order: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+  description: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   }
 }, {
-  tableName: 'subcategories',
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  tableName: 'subcategory', // Changed to match the foreign key constraint
+  timestamps: false, // The subcategory table doesn't have timestamps
   indexes: [
     {
       unique: true,
-      fields: ['category_id', 'slug']
+      fields: ['category_id', 'short_name'] // Changed to match actual table structure
     }
   ]
 });

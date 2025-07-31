@@ -12,9 +12,8 @@ const getCategories = async (req, res) => {
       includeOptions.push({
         model: Subcategory,
         as: 'subcategories',
-        where: { is_active: true },
         required: false,
-        order: [['sort_order', 'ASC']]
+        order: [['id', 'ASC']] // Order by id since sort_order doesn't exist
       });
     }
 
@@ -51,9 +50,8 @@ const getCategoryById = async (req, res) => {
       includeOptions.push({
         model: Subcategory,
         as: 'subcategories',
-        where: { is_active: true },
         required: false,
-        order: [['sort_order', 'ASC']]
+        order: [['id', 'ASC']] // Order by id since sort_order doesn't exist
       });
     }
 
@@ -109,11 +107,10 @@ const getSubcategoriesByCategory = async (req, res) => {
     }
 
     const subcategories = await Subcategory.findAll({
-      where: { 
-        category_id: category.id,
-        is_active: true 
+      where: {
+        category_id: category.id
       },
-      order: [['sort_order', 'ASC']]
+      order: [['id', 'ASC']] // Order by id since sort_order doesn't exist
     });
 
     res.status(200).json({
@@ -168,13 +165,14 @@ const getProductsByCategory = async (req, res) => {
     // Get all subcategories for this category
     const subcategories = await Subcategory.findAll({
       where: {
-        category_id: category.id,
-        is_active: true
+        category_id: category.id
       },
       attributes: ['id']
     });
 
     const subcategoryIds = subcategories.map(sub => sub.id);
+
+
 
     // Build where clause for products
     const productWhereClause = {
@@ -185,12 +183,12 @@ const getProductsByCategory = async (req, res) => {
 
     // Filter by specific subcategory if provided
     if (subcategory) {
-      const subcategoryWhereClause = isNaN(subcategory) ? { slug: subcategory } : { id: parseInt(subcategory) };
+      const subcategoryWhereClause = isNaN(subcategory) ? { short_name: subcategory } : { id: parseInt(subcategory) };
       const targetSubcategory = await Subcategory.findOne({
         where: {
           ...subcategoryWhereClause,
-          category_id: category.id,
-          is_active: true
+          category_id: category.id
+          // Removed is_active since subcategory table doesn't have this field
         }
       });
 

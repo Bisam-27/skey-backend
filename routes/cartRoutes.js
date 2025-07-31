@@ -7,7 +7,6 @@ const {
   removeFromCart,
   clearCart,
   getCartCount,
-  testProductData,
   applyCouponToCart,
   removeCouponFromCart
 } = require('../controllers/cartController');
@@ -39,8 +38,5 @@ router.post('/coupon', applyCouponToCart);
 
 // DELETE /api/cart/coupon - Remove coupon from cart
 router.delete('/coupon', removeCouponFromCart);
-
-// GET /api/cart/test/:product_id - Test product data (for debugging)
-router.get('/test/:product_id', testProductData);
 
 module.exports = router;

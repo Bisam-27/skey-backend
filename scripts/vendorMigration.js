@@ -71,27 +71,7 @@ const migrateVendorSchema = async () => {
     // Step 5: Create a test vendor account (optional)
     console.log('5️⃣ Creating test vendor account...');
     
-    try {
-      const testVendor = await User.findOrCreate({
-        where: { email: 'vendor@example.com' },
-        defaults: {
-          email: 'vendor@example.com',
-          password: 'vendor123',
-          role: 'vendor'
-        }
-      });
-      
-      if (testVendor[1]) {
-        console.log('✅ Test vendor account created:');
-        console.log('   Email: vendor@example.com');
-        console.log('   Password: vendor123');
-        console.log('   Role: vendor\n');
-      } else {
-        console.log('⚠️  Test vendor account already exists\n');
-      }
-    } catch (error) {
-      console.log('⚠️  Could not create test vendor account:', error.message, '\n');
-    }
+    console.log('✅ Vendor migration completed successfully!\n');
 
     // Step 6: Verify the migration
     console.log('6️⃣ Verifying migration...');

@@ -10,6 +10,9 @@ const Feature = require('./feature');
 const Coupon = require('./coupon');
 const CouponUsage = require('./couponUsage');
 const Address = require('./address');
+const Order = require('./order');
+const OrderItem = require('./orderItem');
+const Brand = require('./brand');
 
 // Category has many Subcategories
 Category.hasMany(Subcategory, {
@@ -190,6 +193,63 @@ Address.belongsTo(User, {
   constraints: false
 });
 
+// Order associations
+// User has many Orders
+User.hasMany(Order, {
+  foreignKey: 'user_id',
+  as: 'orders',
+  constraints: false
+});
+
+// Order belongs to User
+Order.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+  constraints: false
+});
+
+// Order has many OrderItems
+Order.hasMany(OrderItem, {
+  foreignKey: 'order_id',
+  as: 'items'
+});
+
+// OrderItem belongs to Order
+OrderItem.belongsTo(Order, {
+  foreignKey: 'order_id',
+  as: 'order'
+});
+
+// Product has many OrderItems
+Product.hasMany(OrderItem, {
+  foreignKey: 'product_id',
+  as: 'orderItems',
+  constraints: false
+});
+
+// OrderItem belongs to Product
+OrderItem.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+  constraints: false
+});
+
+// Migration completed - removed to prevent re-running
+
+// Brand has many Products
+Brand.hasMany(Product, {
+  foreignKey: 'brand_id',
+  as: 'products',
+  constraints: false
+});
+
+// Product belongs to Brand
+Product.belongsTo(Brand, {
+  foreignKey: 'brand_id',
+  as: 'brand',
+  constraints: false
+});
+
 module.exports = {
   Category,
   Subcategory,
@@ -202,5 +262,8 @@ module.exports = {
   Feature,
   Coupon,
   CouponUsage,
-  Address
+  Address,
+  Order,
+  OrderItem,
+  Brand
 };

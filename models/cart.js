@@ -51,7 +51,7 @@ const Cart = sequelize.define('Cart', {
     type: DataTypes.TINYINT(1),
     allowNull: false,
     defaultValue: 0,
-    comment: 'Cart status: 0=active, 1=checked_out, 2=abandoned'
+    comment: 'Cart status: 0=active, 1=checked_out, 2=fulfilled'
   },
   user_id: {
     type: DataTypes.INTEGER,

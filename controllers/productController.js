@@ -388,15 +388,15 @@ const searchProducts = async (req, res) => {
       include: [{
         model: Subcategory,
         as: 'subcategories',
-        where: { is_active: true },
         required: false
+        // Removed is_active since subcategory table doesn't have this field
       }]
     });
 
     const subcategories = await Subcategory.findAll({
       where: {
-        name: { [Op.like]: `%${searchTerm}%` },
-        is_active: true
+        name: { [Op.like]: `%${searchTerm}%` }
+        // Removed is_active since subcategory table doesn't have this field
       }
     });
 

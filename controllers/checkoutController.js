@@ -2,6 +2,7 @@ const Cart = require('../models/cart');
 const Address = require('../models/address');
 const User = require('../models/user');
 const Product = require('../models/product');
+const { Order, OrderItem, Coupon, CouponUsage } = require('../models/associations');
 const { Op } = require('sequelize');
 const sequelize = require('../config/db');
 
@@ -314,6 +315,96 @@ const completeOrder = async (req, res) => {
       );
     }
 
+    // Get user information
+    const user = await User.findByPk(userId, { transaction });
+
+    // Generate unique order number
+    const orderNumber = `ORD-${Date.now()}-${userId}`;
+
+    // Calculate totals
+    const subtotal = parseFloat(cart.total_amount) || 0;
+    const discountAmount = parseFloat(cart.discount_amount) || 0;
+    const deliveryFee = parseFloat(cart.delivery_fee) || 0;
+    const totalAmount = subtotal - discountAmount + deliveryFee;
+
+    // Create order record
+    const order = await Order.create({
+      order_number: orderNumber,
+      user_id: userId,
+      customer_email: user.email,
+      customer_phone: null,
+      customer_name: user.email,
+      shipping_address: {
+        name: address.name,
+        phone: address.phone,
+        address_line_1: address.address_line_1,
+        address_line_2: address.address_line_2,
+        city: address.city,
+        state: address.state,
+        postal_code: address.postal_code,
+        country: address.country
+      },
+      billing_address: null,
+      order_items: cartItems,
+      subtotal: subtotal,
+      discount_amount: discountAmount,
+      coupon_code: cart.applied_coupon,
+      delivery_fee: deliveryFee,
+      tax_amount: 0.00,
+      total_amount: totalAmount,
+      payment_method: payment_method,
+      payment_status: 'paid',
+      order_status: 'confirmed',
+      fulfillment_status: 'unfulfilled',
+      order_notes: null
+    }, { transaction });
+
+    // Create order items
+    for (const item of cartItems) {
+      await OrderItem.create({
+        order_id: order.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_image: null,
+        vendor_id: null,
+        sku: null,
+        quantity: item.quantity,
+        unit_price: parseFloat(item.price) || 0,
+        discount_per_item: 0,
+        final_price: parseFloat(item.discounted_price) || parseFloat(item.price) || 0,
+        line_total: parseFloat(item.subtotal) || 0,
+        product_attributes: {
+          size: item.size || null,
+          color: item.color || null
+        }
+      }, { transaction });
+    }
+
+    // Handle coupon usage tracking if coupon was applied
+    if (cart.applied_coupon && cart.applied_coupon.coupon_id) {
+      try {
+        // Find the coupon
+        const coupon = await Coupon.findByPk(cart.applied_coupon.coupon_id, { transaction });
+
+        if (coupon) {
+          // Record coupon usage
+          await CouponUsage.create({
+            coupon_id: coupon.id,
+            user_id: userId,
+            order_id: order.id,
+            discount_amount: discountAmount,
+            order_amount: subtotal
+          }, { transaction });
+
+          // Update coupon used count
+          await coupon.increment('used_count', { transaction });
+        }
+      } catch (couponError) {
+        console.error('Error tracking coupon usage:', couponError);
+        // Don't fail the order if coupon tracking fails, just log it
+      }
+    }
+
     // Mark cart as completed (status: 1 = completed)
     await cart.update(
       {
@@ -328,7 +419,8 @@ const completeOrder = async (req, res) => {
 
     // Prepare order summary
     const orderSummary = {
-      order_id: cart.id,
+      order_id: order.id,
+      order_number: order.order_number,
       invoice_id: cart.invoice_id,
       items: cartItems.map(item => ({
         product_id: item.product_id,
@@ -341,6 +433,7 @@ const completeOrder = async (req, res) => {
       shipping_address: address,
       payment_method: payment_method,
       order_date: new Date(),
+      total_amount: totalAmount,
       stock_updates: stockUpdates.map(update => ({
         product_id: update.product.id,
         product_name: update.product.name,

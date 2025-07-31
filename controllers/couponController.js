@@ -267,6 +267,50 @@ const getCollections = async (req, res) => {
   }
 };
 
+// Get all products for admin coupon creation (Admin only)
+const getAllProductsForCoupons = async (req, res) => {
+  try {
+    const { search = '', category_id = '', vendor_id = '' } = req.query;
+
+    const whereClause = {};
+
+    if (search) {
+      whereClause[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    if (category_id) {
+      whereClause.subcategory_id = category_id;
+    }
+
+    if (vendor_id) {
+      whereClause.vendor_id = vendor_id;
+    }
+
+    const products = await Product.findAll({
+      where: whereClause,
+      attributes: ['id', 'name', 'price', 'vendor_id', 'subcategory_id'],
+      order: [['name', 'ASC']],
+      limit: 100 // Limit for performance
+    });
+
+    res.json({
+      success: true,
+      data: products
+    });
+
+  } catch (error) {
+    console.error('Get all products for coupons error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+
 // Get single coupon details
 const getCouponDetails = async (req, res) => {
   try {
@@ -556,6 +600,7 @@ module.exports = {
   getVendorCoupons,
   getVendorProducts,
   getCollections,
+  getAllProductsForCoupons,
   getCouponDetails,
   updateCoupon,
   deleteCoupon,

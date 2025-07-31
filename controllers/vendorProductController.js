@@ -55,7 +55,7 @@ const getVendorProducts = async (req, res) => {
         {
           model: Subcategory,
           as: 'subcategory',
-          attributes: ['id', 'name', 'slug']
+          attributes: ['id', 'name', 'short_name'] // Changed slug to short_name
         }
       ],
       limit: limitNum,
@@ -106,7 +106,7 @@ const getVendorProductById = async (req, res) => {
         {
           model: Subcategory,
           as: 'subcategory',
-          attributes: ['id', 'name', 'slug']
+          attributes: ['id', 'name', 'short_name'] // Changed slug to short_name
         }
       ]
     });
@@ -237,7 +237,7 @@ const createVendorProduct = async (req, res) => {
         {
           model: Subcategory,
           as: 'subcategory',
-          attributes: ['id', 'name', 'slug']
+          attributes: ['id', 'name', 'short_name'] // Changed slug to short_name
         }
       ]
     });
@@ -336,7 +336,7 @@ const updateVendorProduct = async (req, res) => {
         {
           model: Subcategory,
           as: 'subcategory',
-          attributes: ['id', 'name', 'slug']
+          attributes: ['id', 'name', 'short_name'] // Changed slug to short_name
         }
       ]
     });
