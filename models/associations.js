@@ -3,6 +3,7 @@ const Subcategory = require('./subcategory');
 const Product = require('./product');
 const User = require('./user');
 const Cart = require('./cart');
+const Wishlist = require('./wishlist');
 const Banner = require('./banner');
 const Testimonial = require('./testimonial');
 const Feature = require('./feature');
@@ -59,12 +60,39 @@ Product.hasMany(Testimonial, {
   constraints: false
 });
 
+// User has many Wishlists
+User.hasMany(Wishlist, {
+  foreignKey: 'user_id',
+  as: 'wishlists'
+});
+
+// Wishlist belongs to User
+Wishlist.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+  constraints: false
+});
+
+// Product has many Wishlists
+Product.hasMany(Wishlist, {
+  foreignKey: 'product_id',
+  as: 'wishlists'
+});
+
+// Wishlist belongs to Product
+Wishlist.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+  constraints: false
+});
+
 module.exports = {
   Category,
   Subcategory,
   Product,
   User,
   Cart,
+  Wishlist,
   Banner,
   Testimonial,
   Feature
