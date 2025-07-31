@@ -1,9 +1,24 @@
-const Product = require('../models/product');
+const { Product, Category, Subcategory } = require('../models/associations');
 const { Op } = require('sequelize');
 
 const getProducts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, category, brand, minPrice, maxPrice } = req.query;
+    const {
+      page = 1,
+      limit = 12,
+      category,
+      brand,
+      minPrice,
+      maxPrice,
+      sortBy = 'created_at',
+      sortOrder = 'DESC',
+      search = '',
+      exclude = ''
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const offset = (pageNum - 1) * limitNum;
 
     // Build where clause for filtering
     const whereClause = {};
@@ -22,26 +37,69 @@ const getProducts = async (req, res) => {
       if (maxPrice) whereClause.price[Op.lte] = parseInt(maxPrice);
     }
 
-    const offset = (page - 1) * limit;
+    // Exclude specific product (for related products)
+    if (exclude) {
+      whereClause.id = { [Op.ne]: parseInt(exclude) };
+    }
 
-    const products = await Product.findAndCountAll({
+    // Validate sort parameters
+    const validSortFields = ['id', 'name', 'price', 'created_at', 'stock', 'discount'];
+    const validSortOrders = ['ASC', 'DESC'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
+    const sortDirection = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    // Add search functionality
+    if (search && search.trim()) {
+      whereClause[Op.or] = [
+        { name: { [Op.like]: `%${search.trim()}%` } },
+        { description: { [Op.like]: `%${search.trim()}%` } },
+        { short_name: { [Op.like]: `%${search.trim()}%` } }
+      ];
+    }
+
+    const { count, rows: products } = await Product.findAndCountAll({
       where: whereClause,
-
-      // Show newest products first
-      order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset)
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ],
+      order: [[sortField, sortDirection]],
+      limit: limitNum,
+      offset: offset
     });
+
+    const totalPages = Math.ceil(count / limitNum);
 
     res.status(200).json({
       success: true,
       message: 'Products retrieved successfully',
-      data: products.rows,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(products.count / limit),
-        totalItems: products.count,
-        itemsPerPage: parseInt(limit)
+      data: {
+        products,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalProducts: count,
+          productsPerPage: limitNum,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
+        },
+        filters: {
+          sortBy: sortField,
+          sortOrder: sortDirection,
+          search: search || '',
+          category,
+          brand,
+          minPrice,
+          maxPrice
+        }
       }
     });
   } catch (err) {
@@ -170,7 +228,20 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByPk(id);
+    const product = await Product.findByPk(id, {
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ]
+    });
 
     if (!product) {
       return res.status(404).json({
@@ -278,10 +349,145 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// Search products with enhanced category search
+const searchProducts = async (req, res) => {
+  try {
+    const {
+      q = '',
+      page = 1,
+      limit = 12,
+      sortBy = 'created_at',
+      sortOrder = 'DESC'
+    } = req.query;
+
+    if (!q || !q.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query is required',
+        error: 'Please provide a search term'
+      });
+    }
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const offset = (pageNum - 1) * limitNum;
+    const searchTerm = q.trim();
+
+    // Validate sort parameters
+    const validSortFields = ['id', 'name', 'price', 'created_at', 'stock', 'discount'];
+    const validSortOrders = ['ASC', 'DESC'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
+    const sortDirection = validSortOrders.includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    // First, find matching categories and subcategories
+    const categories = await Category.findAll({
+      where: {
+        name: { [Op.like]: `%${searchTerm}%` },
+        is_active: true
+      },
+      include: [{
+        model: Subcategory,
+        as: 'subcategories',
+        where: { is_active: true },
+        required: false
+      }]
+    });
+
+    const subcategories = await Subcategory.findAll({
+      where: {
+        name: { [Op.like]: `%${searchTerm}%` },
+        is_active: true
+      }
+    });
+
+    // Collect subcategory IDs from matching categories and subcategories
+    let subcategoryIds = [];
+
+    // Add subcategories from matching categories
+    categories.forEach(category => {
+      if (category.subcategories) {
+        subcategoryIds.push(...category.subcategories.map(sub => sub.id));
+      }
+    });
+
+    // Add directly matching subcategories
+    subcategoryIds.push(...subcategories.map(sub => sub.id));
+
+    // Remove duplicates
+    subcategoryIds = [...new Set(subcategoryIds)];
+
+    // Build search conditions
+    const searchConditions = {
+      [Op.or]: [
+        // Search in product fields
+        { name: { [Op.like]: `%${searchTerm}%` } },
+        { description: { [Op.like]: `%${searchTerm}%` } },
+        { short_name: { [Op.like]: `%${searchTerm}%` } }
+      ]
+    };
+
+    // Add category/subcategory matches if found
+    if (subcategoryIds.length > 0) {
+      searchConditions[Op.or].push({ subcategory_id: { [Op.in]: subcategoryIds } });
+    }
+
+    // Search for products
+    const { count, rows: products } = await Product.findAndCountAll({
+      where: searchConditions,
+      include: [
+        {
+          model: Subcategory,
+          as: 'subcategory',
+          include: [
+            {
+              model: Category,
+              as: 'category'
+            }
+          ]
+        }
+      ],
+      order: [[sortField, sortDirection]],
+      limit: limitNum,
+      offset: offset
+    });
+
+    const totalPages = Math.ceil(count / limitNum);
+
+    res.status(200).json({
+      success: true,
+      message: 'Search completed successfully',
+      data: {
+        products,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalProducts: count,
+          productsPerPage: limitNum,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
+        },
+        searchQuery: q.trim(),
+        filters: {
+          sortBy: sortField,
+          sortOrder: sortDirection
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error searching products:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to search products',
+      error: err.message
+    });
+  }
+};
+
 module.exports = {
   getProducts,
   createProduct,
   getProductById,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  searchProducts
 };
