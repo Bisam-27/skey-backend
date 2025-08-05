@@ -1,372 +1,294 @@
-# Skeyy E-commerce Backend
+# 🚀 Skeyy Backend API
 
-A comprehensive Node.js backend API for the Skeyy e-commerce platform, built with Express.js and Sequelize ORM.
+The backend API server for the Skeyy e-commerce platform built with Node.js, Express.js, and MySQL with comprehensive Google OAuth integration.
 
-## 🚀 Overview
+## 🔗 Related Repositories
 
-This backend serves as the core API for the Skeyy e-commerce platform, providing robust functionality for product management, user authentication, order processing, and administrative operations. It supports multi-tenant vendor operations and comprehensive e-commerce features.
+- **Backend API**: [https://github.com/Bisam-27/skey-backend](https://github.com/Bisam-27/skey-backend) (This Repository)
+- **Frontend Portal**: [https://github.com/Bisam-27/skey-frontend](https://github.com/Bisam-27/skey-frontend)
+- **Admin Panel**: [https://github.com/Bisam-27/skey-adminpannel](https://github.com/Bisam-27/skey-adminpannel)
+- **Vendor Panel**: [https://github.com/Bisam-27/skey-vendorpannel](https://github.com/Bisam-27/skey-vendorpannel)
 
-## 🛠 Technology Stack
+## 📚 Documentation Links
 
-- **Runtime**: Node.js
-- **Framework**: Express.js 5.1.0
-- **Database**: MySQL with Sequelize ORM 6.37.7
-- **Authentication**: JWT (JSON Web Tokens)
+- [Frontend Documentation](https://github.com/Bisam-27/skey-frontend#readme)
+- [Admin Panel Documentation](https://github.com/Bisam-27/skey-adminpannel#readme)
+- [Vendor Panel Documentation](https://github.com/Bisam-27/skey-vendorpannel#readme)
+
+## 🌟 Features
+
+- **RESTful API Architecture**: Clean, scalable API design
+- **JWT Authentication**: Secure token-based authentication
+- **Google OAuth Integration**: One-click signup/login with role selection
+- **Role-based Access Control**: User, Vendor, Admin roles
+- **MySQL Database**: Sequelize ORM with optimized queries
+- **File Upload Support**: Multer for image and document uploads
+- **Real-time Search**: Advanced product search functionality
+- **Comprehensive Error Handling**: Consistent error responses
+- **Input Validation**: Server-side validation and sanitization
+
+## 🛠️ Tech Stack
+
+- **Runtime**: Node.js (v14+)
+- **Framework**: Express.js
+- **Database**: MySQL with Sequelize ORM
+- **Authentication**: JWT, Google OAuth 2.0, Passport.js
 - **Password Hashing**: bcryptjs
-- **File Upload**: Multer 2.0.2
-- **CORS**: cors 2.8.5
-- **Environment Variables**: dotenv 17.2.0
-- **HTTP Client**: axios 1.11.0
+- **File Upload**: Multer
+- **Environment Config**: dotenv
+- **HTTP Client**: Axios
+- **Security**: CORS, Input validation
 
-## 📁 Project Structure
+## 📦 Installation
 
-```
-backend/
-├── config/
-│   └── db.js                    # Database configuration
-├── controllers/
-│   ├── adminCouponController.js      # Admin coupon management
-│   ├── adminDashboardController.js   # Admin dashboard data
-│   ├── adminHomepageController.js    # Homepage content management
-│   ├── adminOrderController.js       # Admin order management
-│   ├── adminProductController.js     # Admin product management
-│   ├── authController.js             # Authentication logic
-│   ├── cartController.js             # Shopping cart operations
-│   ├── categoryController.js         # Category management
-│   ├── checkoutController.js         # Order processing
-│   ├── couponController.js           # Coupon validation
-│   ├── couponUsageController.js      # Coupon usage tracking
-│   ├── homepageController.js         # Homepage data
-│   ├── productController.js          # Product operations
-│   ├── userController.js             # User management
-│   ├── vendorController.js           # Vendor operations
-│   ├── vendorProductController.js    # Vendor product management
-│   └── wishlistController.js         # Wishlist operations
-├── docs/
-│   ├── ADMIN_HOMEPAGE_API.md         # Admin homepage API docs
-│   ├── ADMIN_SETUP_GUIDE.md          # Admin setup guide
-│   ├── COUPON_API.md                 # Coupon system API docs
-│   ├── COUPON_SYSTEM_SUMMARY.md      # Coupon system overview
-│   ├── FRONTEND_COUPON_INTEGRATION.md # Frontend integration guide
-│   ├── HOMEPAGE_API.md               # Homepage API docs
-│   ├── USER_MANAGEMENT_API.md        # User management API docs
-│   └── VENDOR_API.md                 # Vendor API documentation
-├── middleware/
-│   ├── auth.js                       # Authentication middleware
-│   └── upload.js                     # File upload middleware
-├── migrations/
-│   └── add_cart_coupon_fields.sql    # Database migrations
-├── models/
-│   ├── address.js                    # Address model
-│   ├── associations.js               # Model relationships
-│   ├── banner.js                     # Banner model
-│   ├── brand.js                      # Brand model
-│   ├── cart.js                       # Cart model
-│   ├── category.js                   # Category model
-│   ├── coupon.js                     # Coupon model
-│   ├── couponUsage.js               # Coupon usage model
-│   ├── feature.js                    # Feature model
-│   ├── order.js                      # Order model
-│   ├── orderItem.js                  # Order item model
-│   ├── product.js                    # Product model
-│   ├── subcategory.js               # Subcategory model
-│   ├── testimonial.js               # Testimonial model
-│   ├── user.js                       # User model
-│   └── wishlist.js                   # Wishlist model
-├── routes/
-│   ├── adminCouponRoutes.js          # Admin coupon routes
-│   ├── adminDashboardRoutes.js       # Admin dashboard routes
-│   ├── adminHomepageRoutes.js        # Admin homepage routes
-│   ├── adminOrderRoutes.js           # Admin order routes
-│   ├── adminProductRoutes.js         # Admin product routes
-│   ├── authRoutes.js                 # Authentication routes
-│   ├── cartRoutes.js                 # Cart routes
-│   ├── categoryRoutes.js             # Category routes
-│   ├── checkoutRoutes.js             # Checkout routes
-│   ├── couponRoutes.js               # Coupon routes
-│   ├── homepageRoutes.js             # Homepage routes
-│   ├── productRoutes.js              # Product routes
-│   ├── userRoutes.js                 # User routes
-│   ├── vendorProductRoutes.js        # Vendor product routes
-│   ├── vendorRoutes.js               # Vendor routes
-│   └── wishlistRoutes.js             # Wishlist routes
-├── scripts/
-│   ├── addCartCouponFields.js        # Cart coupon migration
-│   ├── createAdminUser.js            # Admin user creation
-│   ├── createCouponTables.js         # Coupon table creation
-│   ├── migrateUserRole.js            # User role migration
-│   ├── seedDatabase.js               # Database seeding
-│   └── vendorMigration.js            # Vendor migration
-├── test/                             # Test files
-├── uploads/
-│   └── products/                     # Product image uploads
-├── package.json                      # Dependencies and scripts
-├── package-lock.json                 # Dependency lock file
-└── server.js                         # Main server file
-```
-
-## 🔧 Installation & Setup
-
-### Prerequisites
-- Node.js (v14 or higher)
-- MySQL database
-- npm or yarn package manager
-
-### Installation Steps
-
-1. **Clone the repository and navigate to backend**
-   ```bash
-   cd backend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env` file in the backend directory:
-   ```env
-   DB_NAME=your_database_name
-   DB_USER=your_database_user
-   DB_PASSWORD=your_database_password
-   DB_HOST=localhost
-   JWT_SECRET=your_jwt_secret_key
-   ```
-
-4. **Database Setup**
-   - Create a MySQL database
-   - Run the application to auto-sync models
-   - Optionally run seeding scripts
-
-5. **Start the server**
-   ```bash
-   npm start
-   # or for development
-   npm run dev
-   ```
-
-## 🌐 API Endpoints
-
-### Server Information
-- **Base URL**: `http://localhost:5000`
-- **Frontend**: `http://localhost:5000`
-- **Admin Panel**: `http://localhost:5000/admin`
-- **Health Check**: `http://localhost:5000/api/health`
-
-### Authentication Routes (`/api/auth`)
-- `POST /register` - User registration
-- `POST /login` - User login
-- `POST /logout` - User logout
-- `GET /profile` - Get user profile
-- `PUT /profile` - Update user profile
-
-### Product Routes (`/api/products`)
-- `GET /` - Get all products (with filtering, pagination)
-- `GET /search` - Search products
-- `GET /:id` - Get product by ID
-- `POST /` - Create product (Admin/Vendor)
-- `PUT /:id` - Update product (Admin/Vendor)
-- `DELETE /:id` - Delete product (Admin/Vendor)
-
-### Category Routes (`/api/categories`)
-- `GET /` - Get all categories
-- `GET /:id` - Get category by ID
-- `GET /:id/subcategories` - Get subcategories
-
-### Cart Routes (`/api/cart`)
-- `GET /` - Get user cart
-- `POST /add` - Add item to cart
-- `PUT /update` - Update cart item
-- `DELETE /remove` - Remove item from cart
-- `DELETE /clear` - Clear cart
-
-### Wishlist Routes (`/api/wishlist`)
-- `GET /` - Get user wishlist
-- `POST /toggle` - Toggle wishlist item
-- `DELETE /` - Clear wishlist
-
-### Order Routes (`/api/checkout`)
-- `POST /` - Process checkout
-- `GET /orders` - Get user orders
-- `GET /orders/:id` - Get order details
-
-### Coupon Routes (`/api/coupons`)
-- `POST /validate` - Validate coupon code
-- `GET /` - Get available coupons
-
-### Admin Routes
-#### Dashboard (`/api/admin/dashboard`)
-- `GET /stats` - Get dashboard statistics
-
-#### Products (`/api/admin/products`)
-- `GET /` - Get all products (admin view)
-- `POST /` - Create product
-- `PUT /:id` - Update product
-- `DELETE /:id` - Delete product
-- `GET /vendors` - Get all vendors
-- `GET /brands` - Get all brands
-
-#### Orders (`/api/admin/orders`)
-- `GET /` - Get all orders
-- `GET /stats` - Get order statistics
-- `GET /fulfilled` - Get fulfilled orders
-- `GET /unfulfilled` - Get unfulfilled orders
-- `PUT /:id/status` - Update order status
-
-#### Users (`/api/users`)
-- `GET /` - Get all users
-- `GET /stats` - Get user statistics
-- `GET /:id` - Get user by ID
-
-#### Coupons (`/api/admin/coupons`)
-- `GET /` - Get all coupons
-- `POST /` - Create coupon
-- `PUT /:id` - Update coupon
-- `DELETE /:id` - Delete coupon
-
-### Vendor Routes (`/api/vendor`)
-- `POST /register` - Vendor registration
-- `POST /login` - Vendor login
-- `GET /profile` - Get vendor profile
-- `PUT /profile` - Update vendor profile
-- `GET /stats` - Get vendor statistics
-
-#### Vendor Products (`/api/vendor/products`)
-- `GET /` - Get vendor products
-- `POST /` - Create vendor product
-- `PUT /:id` - Update vendor product
-- `DELETE /:id` - Delete vendor product
-
-## 🔐 Authentication & Authorization
-
-### User Roles
-- **User**: Regular customers
-- **Vendor**: Product sellers
-- **Admin**: System administrators
-
-### JWT Authentication
-- Tokens are required for protected routes
-- Include in Authorization header: `Bearer <token>`
-- Tokens contain user ID and role information
-
-### Middleware
-- `authenticateToken`: Verifies JWT token
-- `requireAdmin`: Requires admin role
-- `requireVendor`: Requires vendor role
-
-## 📊 Database Models
-
-### Core Models
-- **User**: User accounts with roles (user/vendor/admin)
-- **Product**: Product catalog with vendor association
-- **Category/Subcategory**: Product categorization
-- **Cart**: Shopping cart items
-- **Order/OrderItem**: Order management
-- **Wishlist**: User wishlists
-
-### E-commerce Features
-- **Coupon**: Discount coupons with various types
-- **CouponUsage**: Coupon usage tracking
-- **Address**: User addresses
-- **Brand**: Product brands
-
-### Content Management
-- **Banner**: Homepage banners
-- **Testimonial**: Customer testimonials
-- **Feature**: Platform features
-
-## 🎯 Key Features
-
-### Multi-tenant Architecture
-- Vendor-specific product management
-- Role-based access control
-- Isolated vendor operations
-
-### Advanced E-commerce
-- Comprehensive cart management
-- Coupon system with stacking discounts
-- Order processing with inventory updates
-- Wishlist functionality
-
-### Admin Dashboard
-- Real-time statistics
-- Order management (fulfilled/unfulfilled)
-- User and vendor management
-- Product and coupon management
-
-### Security Features
-- JWT-based authentication
-- Password hashing with bcrypt
-- Role-based authorization
-- Input validation and sanitization
-
-## 🚀 Scripts
-
+### 1. Install Dependencies
 ```bash
-# Start server
-npm start
-
-# Development mode
-npm run dev
-
-# Setup coupon tables
-npm run setup:coupons
+cd backend
+npm install
 ```
 
-## 📝 Environment Variables
-
+### 2. Environment Configuration
+Create `.env` file:
 ```env
 # Database Configuration
-DB_NAME=skeyy_ecommerce
+DB_NAME=skey
 DB_USER=root
 DB_PASSWORD=your_password
 DB_HOST=localhost
 
 # JWT Configuration
-JWT_SECRET=your_super_secret_jwt_key
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRES_IN=7d
 
 # Server Configuration
 PORT=5000
-NODE_ENV=development
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 ```
 
-## 🔄 Database Relationships
+### 3. Database Setup
+```bash
+# Create MySQL database 'skey'
+# Run migrations
+node scripts/addGoogleOAuthFields.js
+npm run setup:coupons
+```
 
-- Users can be customers, vendors, or admins
-- Vendors can create and manage their own products
-- Products belong to categories and subcategories
-- Orders contain multiple order items
-- Coupons can be vendor-specific or global
-- Cart items are associated with users and products
+### 4. Start Server
+```bash
+npm start          # Production
+npm run dev        # Development
+```
 
-## 📈 Performance Features
+Server runs on `http://localhost:5000`
 
-- Database indexing for optimized queries
-- Pagination for large datasets
-- Image upload optimization
-- Efficient relationship loading
+## 🔐 Authentication System
 
-## 🛡️ Security Considerations
-
-- All passwords are hashed using bcrypt
-- JWT tokens for stateless authentication
-- CORS configuration for cross-origin requests
-- Input validation and sanitization
+### Traditional Authentication
+- Email/password registration and login
+- JWT token generation and validation
 - Role-based access control
 
-## 🔧 Maintenance
+### Google OAuth Flow
+1. **Frontend**: User clicks "Sign in with Google"
+2. **Google**: User authenticates with Google
+3. **Backend**: Receives Google ID token
+4. **Validation**: Verifies token with Google
+5. **User Check**: Checks if user exists
+6. **Role Selection**: New users select role (Customer/Vendor)
+7. **Account Creation**: Creates user with selected role
+8. **JWT Generation**: Returns JWT token for session
+
+### Security Features
+- Password hashing with bcryptjs (10 salt rounds)
+- JWT tokens with expiration
+- Google OAuth token verification
+- Role-based middleware protection
+- Input validation and sanitization
+- CORS protection
+
+## 📊 Database Models
+
+### User Model
+```javascript
+{
+  id: INTEGER (PK, Auto-increment),
+  email: STRING(255) (Unique, Required),
+  password: STRING(255) (Nullable for Google OAuth),
+  googleId: STRING(255) (Unique, Nullable),
+  name: STRING(255) (Nullable),
+  profilePicture: TEXT (Nullable),
+  role: ENUM('user', 'vendor', 'admin') (Default: 'user')
+}
+```
+
+### VendorProfile Model
+```javascript
+{
+  id: INTEGER (PK),
+  user_id: INTEGER (FK to User),
+  business_name: STRING (Required),
+  contact_name: STRING (Required),
+  mobile_number: STRING (Required),
+  gst_number: STRING,
+  business_address: TEXT (Required),
+  bank_name: STRING,
+  pan_number: STRING
+}
+```
+
+### Product Model
+```javascript
+{
+  id: INTEGER (PK),
+  name: STRING (Required),
+  description: TEXT,
+  price: DECIMAL(10,2) (Required),
+  discountedPrice: DECIMAL(10,2),
+  stock: INTEGER (Default: 0),
+  images: JSON (Array of image paths),
+  categoryId: INTEGER (FK),
+  subcategoryId: INTEGER (FK),
+  vendorId: INTEGER (FK)
+}
+```
+
+## 🛣️ API Routes
+
+### Authentication Routes (`/api/auth`)
+
+#### `POST /api/auth/register`
+Register new user with email/password
+
+#### `POST /api/auth/login`
+Login with email/password
+
+#### `POST /api/auth/google`
+Google OAuth login/signup with role selection
+
+#### `POST /api/auth/google/check`
+Check if Google user exists
+
+#### `GET /api/auth/profile` 🔒
+Get current user profile (requires authentication)
+
+### Product Routes (`/api/products`)
+
+#### `GET /api/products`
+Get products with filtering and pagination
+
+#### `GET /api/products/:id`
+Get single product details
+
+#### `GET /api/products/search`
+Real-time product search
+
+### Admin Routes (`/api/admin/*`) 🔒👑
+
+#### Dashboard (`/api/admin/dashboard`)
+- `GET /stats` - Platform statistics
+- `GET /recent-orders` - Recent orders
+- `GET /top-products` - Top-selling products
+
+#### User Management (`/api/users`)
+- `GET /` - All users with pagination
+- `GET /:id` - Specific user details
+- `GET /stats` - User statistics
+
+### Vendor Routes (`/api/vendor/*`) 🔒🏪
+
+#### Registration (`/api/vendor/register`)
+- `POST /` - Register vendor with business details
+
+#### Product Management (`/api/vendor/products`)
+- `GET /` - Vendor's products only
+- `POST /` - Create new product
+- `PUT /:id` - Update own product
+- `DELETE /:id` - Delete own product
+
+## 🔒 Middleware & Security
+
+### Authentication Middleware
+- `authenticateToken`: Verifies JWT token
+- `requireAdmin`: Admin role required
+- `requireVendor`: Vendor role required
+- `optionalAuth`: Optional authentication
+
+### Security Features
+- JWT token validation
+- Role-based access control
+- Input validation and sanitization
+- Password hashing (bcryptjs)
+- Google OAuth token verification
+- CORS protection
+- File upload validation
+
+## 📁 File Structure
+
+```
+backend/
+├── config/
+│   ├── db.js              # Database connection
+│   └── passport.js        # Google OAuth config
+├── controllers/           # Business logic
+├── middleware/           # Authentication & validation
+├── models/              # Database models
+├── routes/              # API endpoints
+├── scripts/             # Database migrations
+├── uploads/             # File uploads
+├── .env                 # Environment variables
+├── server.js           # Main server file
+└── package.json        # Dependencies
+```
+
+## 🚀 Deployment
+
+### Production Considerations
+- Use PM2 for process management
+- Set up nginx reverse proxy
+- Enable HTTPS with SSL certificates
+- Configure database connection pooling
+- Set up monitoring and logging
+
+## 🔧 Development
 
 ### Database Migrations
-- Located in `/migrations` folder
-- Run manually or through scripts
-- Version-controlled schema changes
+```bash
+# Add Google OAuth support
+node scripts/addGoogleOAuthFields.js
 
-### File Uploads
-- Product images stored in `/uploads/products`
-- Handled by Multer middleware
-- Configurable file size limits
+# Setup coupon system
+npm run setup:coupons
+```
 
-## 📞 Support
+### API Testing
+```bash
+curl -H "Authorization: Bearer jwt_token" \
+     http://localhost:5000/api/auth/profile
+```
 
-For technical support or questions about the backend API, refer to the documentation in the `/docs` folder or contact the development team.
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Database Connection**
+   - Verify MySQL is running
+   - Check `.env` credentials
+   - Ensure database `skey` exists
+
+2. **Google OAuth**
+   - Verify Google Cloud Console setup
+   - Check client ID/secret in `.env`
+   - Ensure authorized origins are configured
+
+3. **JWT Issues**
+   - Check JWT_SECRET is set
+   - Verify token format: `Bearer <token>`
+   - Check token expiration
+
+---
+
+**🛍️ Skeyy Backend API - Powering Modern E-Commerce**
