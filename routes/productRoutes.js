@@ -5,8 +5,12 @@ const {
   createProduct,
   getProductById,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  searchProducts
 } = require('../controllers/productController');
+
+// GET /api/products/search - Search products by name and category
+router.get('/search', searchProducts);
 
 // GET /api/products - Get all products with filtering and pagination
 router.get('/', getProducts);
